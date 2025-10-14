@@ -1,0 +1,23 @@
+[general]
+test = "test"
+
+[ScreenshotTaker]
+monitor_number = 2
+
+[MovementController]
+offset_x = -1920
+offset_y = 0
+dry_run = true
+
+[AOIExtractor]
+max_salvage_output = -1
+max_boxes_iteration_memory = 0
+save_images_with_detections = true
+
+[Scrooper]
+refference_point = [0.5, 0.55]
+very_close_distance = 20
+close_distance = 50
+medium_distance = 200
+front_angle = 15
+medium_angle = 80

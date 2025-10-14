@@ -9,9 +9,12 @@ dependencies = [
     "chromium>=0.0.0",
     "lxml>=6.0.2",
     "requests>=2.32.5",
+    "toml>=0.10.2",
 ]
 
 [dependency-groups]
 dev = [
     "ruff>=0.13.3",
+    "mypy>=1.17.1",
+    "types-toml>=0.10.8.20240310",
 ]
