@@ -1,0 +1,2 @@
+class BasicScrapper:
+    pass
