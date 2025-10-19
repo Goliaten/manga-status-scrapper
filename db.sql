@@ -1,89 +1,105 @@
--- Disable foreign key constraints for bulk operations (optional, but good practice for setup)
--- PRAGMA foreign_keys = OFF;
 
--- Table: Roles
-CREATE TABLE IF NOT EXISTS Roles (
-    role_id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+
+
+DROP TABLE IF EXISTS T_ROLES;
+CREATE TABLE IF NOT EXISTS T_ROLES (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     role_name VARCHAR(50) UNIQUE NOT NULL,
     description TEXT
 );
 
--- Table: Users
-CREATE TABLE IF NOT EXISTS Users (
-    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+DROP TABLE IF EXISTS T_USERS;
+CREATE TABLE IF NOT EXISTS T_USERS (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     username VARCHAR(255) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role_id INTEGER NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    is_active BOOLEAN DEFAULT 1, -- 1 for active, 0 for inactive
-    FOREIGN KEY (role_id) REFERENCES Roles (role_id)
+    is_active BOOLEAN DEFAULT 1, 
+    FOREIGN KEY (role_id) REFERENCES T_ROLES (id)
 );
 
--- Table: Permissions
-CREATE TABLE IF NOT EXISTS Permissions (
-    permission_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    permission_name VARCHAR(100) UNIQUE NOT NULL
+
+DROP TABLE IF EXISTS T_PERMISSIONS;
+CREATE TABLE IF NOT EXISTS T_PERMISSIONS (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(100) UNIQUE NOT NULL
 );
 
--- Table: Role_Permissions (Junction table)
-CREATE TABLE IF NOT EXISTS Role_Permissions (
+
+DROP TABLE IF EXISTS T_ROLE_PERMISSIONS;
+CREATE TABLE IF NOT EXISTS T_ROLE_PERMISSIONS (
     role_id INTEGER NOT NULL,
     permission_id INTEGER NOT NULL,
     PRIMARY KEY (role_id, permission_id),
-    FOREIGN KEY (role_id) REFERENCES Roles (role_id),
-    FOREIGN KEY (permission_id) REFERENCES Permissions (permission_id)
+    FOREIGN KEY (role_id) REFERENCES T_ROLES (id),
+    FOREIGN KEY (permission_id) REFERENCES T_PERMISSIONS (id)
 );
 
--- Table: Scraping_Scripts
-CREATE TABLE IF NOT EXISTS Scraping_Scripts (
-    script_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    script_name VARCHAR(255) UNIQUE NOT NULL,
-    script_path VARCHAR(500) NOT NULL,
-    last_modified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    description TEXT
-);
-
--- Table: Comics
-CREATE TABLE IF NOT EXISTS Comics (
-    comic_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title VARCHAR(255) UNIQUE NOT NULL,
-    alternative_titles TEXT, -- Stored as JSON string
-    description TEXT,
-    author VARCHAR(255),
-    artist VARCHAR(255),
-    genre VARCHAR(255),
-    status VARCHAR(50),
-    cover_image_url VARCHAR(500),
-    is_scraping_enabled BOOLEAN DEFAULT 1, -- 1 for enabled, 0 for disabled
-    scraping_script_id INTEGER,
-    source_url VARCHAR(500),
+DROP TABLE IF EXISTS T_SCRAPING_SCRIPTS;
+CREATE TABLE IF NOT EXISTS T_SCRAPING_SCRIPTS (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (scraping_script_id) REFERENCES Scraping_Scripts (script_id)
+    last_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    class_name VARCHAR(255) UNIQUE NOT NULL
 );
 
--- Table: Scraping_History
-CREATE TABLE IF NOT EXISTS Scraping_History (
-    history_id INTEGER PRIMARY KEY AUTOINCREMENT,
+DROP TABLE IF EXISTS T_COMICS;
+CREATE TABLE IF NOT EXISTS T_COMICS (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    title VARCHAR(255) UNIQUE NOT NULL,
+    status VARCHAR(50) DEFAULT 'unknown'
+);
+
+DROP TABLE IF EXISTS T_SCRAPING_INSTANCE;
+CREATE TABLE IF NOT EXISTS T_SCRAPING_INSTANCE (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT 0, 
+    scraping_url VARCHAR(500) NOT NULL,
+    scraping_interval INTEGER DEFAULT 86400,
     comic_id INTEGER NOT NULL,
-    chapter_number DECIMAL(10, 2) NOT NULL,
-    chapter_title VARCHAR(500),
-    scraped_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    url VARCHAR(500),
-    FOREIGN KEY (comic_id) REFERENCES Comics (comic_id)
+    scraping_script_id INTEGER NOT NULL,
+    FOREIGN KEY (comic_id) REFERENCES T_COMICS (id),
+    FOREIGN KEY (scraping_script_id) REFERENCES T_SCRAPING_SCRIPTS (id)
 );
 
--- Table: User_Subscriptions (Junction table)
-CREATE TABLE IF NOT EXISTS User_Subscriptions (
+DROP TABLE IF EXISTS T_SCRAPING_HISTORY;
+CREATE TABLE IF NOT EXISTS T_SCRAPING_HISTORY (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    scraping_instance_id INTEGER NOT NULL,
+    chapter_number DECIMAL(10, 2) NOT NULL,
+    chapter_title VARCHAR(255),
+    scraped_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (scraping_instance_id) REFERENCES T_SCRAPING_INSTANCE (id)
+);
+
+DROP TABLE IF EXISTS T_USER_SUBSCRIPTION;
+CREATE TABLE IF NOT EXISTS T_USER_SUBSCRIPTION (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     comic_id INTEGER NOT NULL,
     subscribed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, comic_id),
-    FOREIGN KEY (user_id) REFERENCES Users (user_id),
-    FOREIGN KEY (comic_id) REFERENCES Comics (comic_id)
+    FOREIGN KEY (user_id) REFERENCES T_USERS (id),
+    FOREIGN KEY (comic_id) REFERENCES T_COMICS (id)
 );
 
--- Re-enable foreign key constraints if you disabled them earlier
--- PRAGMA foreign_keys = ON;
+
+
+INSERT INTO T_COMICS (title) VALUES 
+    ("test_comic_1"),
+    ("test_comic_2");
+
+INSERT INTO T_SCRAPING_SCRIPTS(class_name) VALUES
+    ('BasicScrapper'),
+    ('TestScrapper');
+
+INSERT INTO T_SCRAPING_INSTANCE(is_active, scraping_url, comic_id, scraping_script_id) VALUES
+    (1, '', 1, 1);
