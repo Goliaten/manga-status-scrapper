@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from typing import Any, Dict, List, Tuple
-from source.dataclasses.ScrapResult import ScrapResult
+from source.data_classes.ScrapResult import ScrapResult
 
 
 class BaseDBManager:
