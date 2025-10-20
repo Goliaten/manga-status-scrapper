@@ -11,4 +11,6 @@ LOG_DIR = Path(RUNTIME_PATH, "logs")
 DATABASE_DIR = Path(RUNTIME_PATH, "database")
 DATABASE_PATH = Path(DATABASE_DIR, "base.db")
 
+DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"  # YYYY-MM-DD HH:MM:SS
+
 FLASK_APP_NAME = "manga_status"
