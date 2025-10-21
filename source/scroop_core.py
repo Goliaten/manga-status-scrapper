@@ -34,7 +34,9 @@ def scrape(db_manager: BaseDBManager, instances: List[ScrapingInstance]) -> Any:
             scraper: sc.BasicScrapper = sc.__dict__[script.class_name]()
             # scrape
             scrape_data = scraper.scrape(instance.scraping_url)
-            # TODO put status in scraping history
+            # put status in scraping history
+            scraper.upsert_data(db_manager, instance, scrape_data)
+            # TODO log scraping status
         else:
             raise ValueError("Invalid scraping class")  # for now i'll raise an error
             # TODO put scraping error in history
