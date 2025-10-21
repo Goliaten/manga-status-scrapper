@@ -1,9 +1,10 @@
+from datetime import datetime
 from pathlib import Path
 from typing import List
 import sqlite3
 
 import source.config as cfg
-from source.data_classes import ScrapingScript, ScrapingInstance
+from source.data_classes import ScrapingHistory, ScrapingScript, ScrapingInstance
 from source.DB.BaseDBManager import BaseDBManager
 
 
@@ -38,6 +39,7 @@ class SQLiteManager(BaseDBManager):
             self.cursor.executescript(sql)
 
     def get_scraping_instances(self, **kwarg) -> List[ScrapingInstance]:
+        print("getting scraping instances")
         sql = """
             SELECT
                 *
@@ -51,6 +53,7 @@ class SQLiteManager(BaseDBManager):
         return instances
 
     def get_scraping_scripts(self, **kwarg) -> List[ScrapingScript]:
+        print("getting scraping scripts")
         sql = """
             SELECT
                 *
@@ -64,6 +67,7 @@ class SQLiteManager(BaseDBManager):
         return scripts
 
     def get_scraping_script(self, **kwarg) -> ScrapingScript:
+        print("getting scraping script")
         sql = """
             SELECT
                 *
@@ -77,3 +81,26 @@ class SQLiteManager(BaseDBManager):
         x = self.execute(sql).fetchone()
         script = ScrapingScript(*x)
         return script
+
+    def insert_scraping_history(self, scraping_history: List[ScrapingHistory]) -> None:
+        print("inserting scraping history")
+        if not scraping_history:
+            # TODO log that nothing happened
+            return
+        # self.db.execute("begin")
+        sql = f"""
+            INSERT INTO 
+                T_SCRAPING_HISTORY
+                ({", ".join(scraping_history[0].__dict__.keys())})
+            VALUES\n"""
+
+        for cnt, scrap_history in enumerate(scraping_history, 1):
+            sql += f"({', '.join([x.strftime(cfg.DATETIME_FORMAT) if isinstance(x, datetime) else str(x) if x else 'NULL' for x in scrap_history.__dict__.values()])})"
+            if cnt != len(scraping_history):
+                sql += ",\n"
+        print(sql)
+        exit()
+        x = self.execute(sql)
+        x.connection.commit()
+        # self.db.execute("commit")
+        print(f" updated {x.rowcount} rows")
