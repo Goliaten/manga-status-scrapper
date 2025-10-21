@@ -1,22 +1,20 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Tuple
+
+from source.data_classes import ScrapingInstance, ScrapingScript
+from source.helpers.Singleton import Singleton
 # from .data_classes.ScrapResult import ScrapResult
 
 
-class BaseDBManager:
-    pass
-    # @abstractmethod
-    # def insert_scrap_results(
-    #     self, scrap_results: List[ScrapResult]
-    # ) -> Tuple[int, str]: ...
+class BaseDBManager(ABC, Singleton):
+    @abstractmethod
+    def get_scraping_instances(self, **kwarg) -> List[ScrapingInstance]:
+        raise NotImplementedError
 
-    # @abstractmethod
-    # def get_scrap_results(self, filters: Dict[str, Any]) -> List[ScrapResult]: ...
+    @abstractmethod
+    def get_scraping_scripts(self, **kwarg) -> List[ScrapingScript]:
+        raise NotImplementedError
 
-    # @abstractmethod
-    # def upsert_scrap_results(
-    #     self, scrap_results: List[ScrapResult]
-    # ) -> Tuple[int, str]: ...
-
-    # @abstractmethod
-    # def deactivate_scrap_results(self, filters: Dict[str, Any]) -> Tuple[int, str]: ...
+    @abstractmethod
+    def get_scraping_script(self, **kwarg) -> ScrapingScript:
+        raise NotImplementedError

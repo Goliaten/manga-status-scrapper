@@ -4,11 +4,10 @@ import sqlite3
 
 import source.config as cfg
 from source.data_classes import ScrapingScript, ScrapingInstance
-from source.helpers.Singleton import Singleton
 from source.DB.BaseDBManager import BaseDBManager
 
 
-class SQLiteManager(BaseDBManager, Singleton):
+class SQLiteManager(BaseDBManager):
     def __init__(self):
         db_exists = Path(cfg.DATABASE_PATH).exists()
         if not db_exists:
