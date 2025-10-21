@@ -16,7 +16,7 @@ def check_db_integrity():
 def get_scraping_instances() -> List[ScrapingInstance]:
     print("getting scraping instances from db")
     # TODO get scraping instances from db
-    instances = SQLiteManager().get_scraping_instance()
+    instances = SQLiteManager().get_scraping_instances()
     # TODO check if it's time to scrape them
     instances = [x for x in instances if x.is_scraping_due()]
     return instances

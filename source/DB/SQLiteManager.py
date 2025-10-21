@@ -38,7 +38,7 @@ class SQLiteManager(BaseDBManager, Singleton):
             sql = file.read()
             self.cursor.executescript(sql)
 
-    def get_scraping_instance(self, **kwarg) -> List[ScrapingInstance]:
+    def get_scraping_instances(self, **kwarg) -> List[ScrapingInstance]:
         sql = """
             SELECT
                 *
@@ -51,7 +51,7 @@ class SQLiteManager(BaseDBManager, Singleton):
         instances = [ScrapingInstance(*x) for x in self.execute(sql).fetchall()]
         return instances
 
-    def get_scraping_script(self, **kwarg) -> List[ScrapingScript]:
+    def get_scraping_scripts(self, **kwarg) -> List[ScrapingScript]:
         sql = """
             SELECT
                 *
@@ -63,3 +63,18 @@ class SQLiteManager(BaseDBManager, Singleton):
 
         scripts = [ScrapingScript(*x) for x in self.execute(sql).fetchall()]
         return scripts
+
+    def get_scraping_script(self, **kwarg) -> ScrapingScript:
+        sql = """
+            SELECT
+                *
+            FROM
+                T_SCRAPING_SCRIPT
+            """
+        if kwarg:
+            sql += self.__condition_adder(**kwarg)
+        sql += "\nlimit 1"
+
+        x = self.execute(sql).fetchone()
+        script = ScrapingScript(*x)
+        return script
