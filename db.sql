@@ -103,4 +103,4 @@ INSERT INTO T_SCRAPING_SCRIPT(class_name) VALUES
     ('TestScrapper');
 
 INSERT INTO T_SCRAPING_INSTANCE(is_active, scraping_url, comic_id, scraping_script_id) VALUES
-    (1, '', 1, 1);
+    (1, '', 1, 2);
