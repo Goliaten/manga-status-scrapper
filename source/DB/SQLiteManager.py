@@ -82,25 +82,41 @@ class SQLiteManager(BaseDBManager):
         script = ScrapingScript(*x)
         return script
 
-    def insert_scraping_history(self, scraping_history: List[ScrapingHistory]) -> None:
+    def insert_scraping_history(
+        self, scraping_history: List[ScrapingHistory]
+    ) -> List[int]:
         print("inserting scraping history")
         if not scraping_history:
             # TODO log that nothing happened
-            return
-        # self.db.execute("begin")
-        sql = f"""
-            INSERT INTO 
-                T_SCRAPING_HISTORY
-                ({", ".join(scraping_history[0].__dict__.keys())})
-            VALUES\n"""
+            return []
+        out_id = []
+        self.db.execute("begin")
+        for scrap_hist in scraping_history:
+            keys = [x[0] for x in scrap_hist.__dict__.items() if x[1]]
+            values = [
+                x[1].strftime(cfg.DATETIME_FORMAT)
+                if isinstance(x, datetime)
+                else str(x[1])
+                for x in scrap_hist.__dict__.items()
+                if x[1]
+            ]
 
-        for cnt, scrap_history in enumerate(scraping_history, 1):
-            sql += f"({', '.join([x.strftime(cfg.DATETIME_FORMAT) if isinstance(x, datetime) else str(x) if x else 'NULL' for x in scrap_history.__dict__.values()])})"
-            if cnt != len(scraping_history):
-                sql += ",\n"
-        print(sql)
-        exit()
-        x = self.execute(sql)
-        x.connection.commit()
-        # self.db.execute("commit")
-        print(f" updated {x.rowcount} rows")
+            sql = f"""
+                INSERT INTO 
+                    T_SCRAPING_HISTORY
+                    ({", ".join(keys)})
+                VALUES
+                    ({", ".join(values)})"""
+            x = self.execute(sql)
+            if not x.rowcount or not x.lastrowid:
+                print(f"could not insert scraping history {scrap_hist=}")
+                self.db.execute("rollback")
+                return []
+
+            out_id.append(x.lastrowid)
+
+        # x.connection.commit()
+        self.db.execute("commit")
+        print(f" updated {len(out_id)} rows")
+
+        return out_id
