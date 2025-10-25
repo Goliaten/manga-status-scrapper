@@ -49,7 +49,15 @@ class SQLiteManager(BaseDBManager):
         if kwarg:
             sql += self.__condition_adder(**kwarg)
 
-        instances = [ScrapingInstance(*x) for x in self.execute(sql).fetchall()]
+        db_data = self.execute(sql).fetchall()
+        try:
+            instances = [ScrapingInstance(*x) for x in db_data]
+        except Exception as e:
+            print(db_data)
+            import traceback
+
+            traceback.print_exc()
+            exit(1)
         return instances
 
     def get_scraping_scripts(self, **kwarg) -> List[ScrapingScript]:
