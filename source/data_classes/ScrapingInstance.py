@@ -32,6 +32,9 @@ class ScrapingInstance:
         """
         Check whether instance should be scrapped.
         """
+        if not self.is_active:
+            return False
+
         if not self.last_scrap_at:
             return True
         if (
