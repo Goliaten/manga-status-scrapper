@@ -94,9 +94,11 @@ class SQLiteManager(BaseDBManager):
         self, scraping_history: List[ScrapingHistory]
     ) -> List[int]:
         print("inserting scraping history")
+
         if not scraping_history:
             # TODO log that nothing happened
             return []
+
         out_id = []
         self.db.execute("begin")
         for scrap_hist in scraping_history:
@@ -128,3 +130,33 @@ class SQLiteManager(BaseDBManager):
         print(f" updated {len(out_id)} rows")
 
         return out_id
+
+    def update_instance(self, scraping_instance: ScrapingInstance):
+        scraping_instance.last_updated_at = datetime.now()
+        keys = [
+            x[0]
+            for x in scraping_instance.__dict__.items()
+            if x[0] not in ("id", "created_at")
+        ]
+        values = [
+            f'"{x.strftime(cfg.DATETIME_FORMAT)}"'
+            if isinstance(x, datetime)
+            else f"{x}"
+            if isinstance(x, float)
+            else f'"{x}"'
+            for x in [scraping_instance.__dict__[y] for y in keys]
+        ]
+
+        sql = f"""
+            UPDATE
+                T_SCRAPING_INSTANCE
+            SET
+                {", ".join([f"{x}={y}" for x, y in zip(keys, values)])}
+            WHERE
+                id={scraping_instance.id}
+                """
+
+        self.db.execute("begin")
+        x = self.execute(sql)
+        self.db.execute("commit")
+        print(f"Updated {x.rowcount} rows")

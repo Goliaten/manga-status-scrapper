@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Tuple
+from typing import List
 
 from source.data_classes import ScrapingHistory, ScrapingInstance, ScrapingScript
 from source.helpers.Singleton import Singleton
@@ -23,4 +23,8 @@ class BaseDBManager(ABC, Singleton):
     def insert_scraping_history(
         self, scraping_history: List[ScrapingHistory]
     ) -> List[int]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def update_instance(self, scraping_instance: ScrapingInstance) -> None:
         raise NotImplementedError
