@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, List
 import time
 from source.DB import BaseDBManager
@@ -29,20 +30,20 @@ def scrape(db_manager: BaseDBManager, instances: List[ScrapingInstance]) -> Any:
     for instance in instances:
         script = db_manager.get_scraping_script(id=instance.scraping_script_id)
 
-        if script.class_name in sc.__dict__:
-            print(f"{script.class_name=}")
-            scraper: sc.BasicScrapper = sc.__dict__[script.class_name]()
-            # scrape
-            scrape_data = scraper.scrape(instance.scraping_url)
-            # put status in scraping history
-            scraper.upsert_data(db_manager, instance, scrape_data)
-            # TODO log scraping status
-        else:
+        if not script.class_name in sc.__dict__:
             raise ValueError("Invalid scraping class")  # for now i'll raise an error
             # TODO put scraping error in history
             # TODO write error to logs
-        exit("aaa")
-    pass
+        print(f"{script.class_name=}")
+        scraper: sc.BasicScrapper = sc.__dict__[script.class_name]()
+        # scrape
+        scrape_data = scraper.scrape(instance.scraping_url)
+        # put status in scraping history
+        scraper.upsert_data(db_manager, instance, scrape_data)
+        # TODO log scraping status
+        # update instance
+        instance.last_scrap_at = datetime.now()
+        db_manager.update_instance(instance)
 
 
 def get_db_manager():
@@ -56,19 +57,13 @@ def core():
     db_manager = get_db_manager()
     check_db_integrity(db_manager)
 
-    while True:
-        instances = get_scraping_instances(db_manager)
-        # print(instances)
+    # while True:
+    instances = get_scraping_instances(db_manager)
 
-        scrape(db_manager, instances)
+    scrape(db_manager, instances)
 
-        time.sleep(SLEEP_TIME)
-
-    # check if there is something to scrap
-    # if yes, scrap everything, and insert it to database
-    pass
+    time.sleep(SLEEP_TIME)
 
 
 if __name__ == "__main__":
-    # SQLiteManager().init_db()
     core()
