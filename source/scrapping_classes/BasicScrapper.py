@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from source.DB import BaseDBManager
-from source.data_classes import ScrapingHistory, ScrapingInstance
+from source.data_classes import ScrapingInstance
 
 
 class BasicScrapper(ABC):
