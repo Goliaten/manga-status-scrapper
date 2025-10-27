@@ -25,15 +25,19 @@ def get_scraping_instances(db_manager: BaseDBManager) -> List[ScrapingInstance]:
 
 def scrape(db_manager: BaseDBManager, instances: List[ScrapingInstance]) -> Any:
     # TODO maybe add option to also scan the content of the website for other comics
-    print("scraping")
+    print(f"scraping {len(instances)} instances")
     # loop over the instances
     for instance in instances:
         script = db_manager.get_scraping_script(id=instance.scraping_script_id)
 
-        if not script.class_name in sc.__dict__:
+        if script.class_name not in sc.__dict__:
+            print(
+                f"Scraping class not found. Received '{script.class_name}', got '{sc.__dict__}'."
+            )
             raise ValueError("Invalid scraping class")  # for now i'll raise an error
             # TODO put scraping error in history
             # TODO write error to logs
+
         print(f"{script.class_name=}")
         scraper: sc.BasicScrapper = sc.__dict__[script.class_name]()
         # scrape
@@ -52,17 +56,13 @@ def get_db_manager():
 
 def core():
     # TODO make proper logger
-    SLEEP_TIME = 60
     print("starting core")
     db_manager = get_db_manager()
     check_db_integrity(db_manager)
 
-    # while True:
     instances = get_scraping_instances(db_manager)
 
     scrape(db_manager, instances)
-
-    time.sleep(SLEEP_TIME)
 
 
 if __name__ == "__main__":
