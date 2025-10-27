@@ -12,8 +12,8 @@ class ScrapingHistory:
     scraping_instance_id: int
     chapter_number: float
     chapter_title: Optional[str]
-    scraped_at: Optional[datetime]
+    scraped_at: Optional[datetime | str]
 
     def __post_init__(self):
-        if self.scraped_at:
+        if self.scraped_at and isinstance(self.scraped_at, str):
             self.scraped_at = datetime.strptime(self.scraped_at, cfg.DATETIME_FORMAT)
