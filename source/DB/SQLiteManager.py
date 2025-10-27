@@ -57,6 +57,7 @@ class SQLiteManager(BaseDBManager):
             import traceback
 
             traceback.print_exc()
+            print(e)
             exit(1)
         return instances
 

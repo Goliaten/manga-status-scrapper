@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import Any, List
-import time
 from source.DB import BaseDBManager
 from source.DB.SQLiteManager import SQLiteManager
 from source.data_classes import ScrapingInstance
