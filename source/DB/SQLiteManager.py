@@ -102,13 +102,14 @@ class SQLiteManager(BaseDBManager):
         out_id = []
         self.db.execute("begin")
         for scrap_hist in scraping_history:
-            keys = [x[0] for x in scrap_hist.__dict__.items() if x[1]]
+            keys = [x[0] for x in scrap_hist.__dict__.items() if x[0] not in ("id")]
             values = [
-                x[1].strftime(cfg.DATETIME_FORMAT)
+                f'"{x.strftime(cfg.DATETIME_FORMAT)}"'
                 if isinstance(x, datetime)
-                else str(x[1])
-                for x in scrap_hist.__dict__.items()
-                if x[1]
+                else f"{x}"
+                if isinstance(x, float)
+                else f'"{x}"'
+                for x in [scrap_hist.__dict__[y] for y in keys]
             ]
 
             sql = f"""
@@ -117,7 +118,16 @@ class SQLiteManager(BaseDBManager):
                     ({", ".join(keys)})
                 VALUES
                     ({", ".join(values)})"""
-            x = self.execute(sql)
+
+            try:
+                x = self.execute(sql)
+            except Exception as e:
+                print(sql)
+                import traceback
+
+                traceback.print_exc()
+                raise e
+
             if not x.rowcount or not x.lastrowid:
                 print(f"could not insert scraping history {scrap_hist=}")
                 self.db.execute("rollback")
