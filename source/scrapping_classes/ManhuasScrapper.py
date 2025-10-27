@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Literal, Tuple
-from . import BasicScrapper
+from .BasicScrapper import BasicScrapper
 import bs4
 
 from source.data_classes import ScrapingHistory, ScrapingInstance
@@ -41,11 +41,14 @@ class ManhuasScrapper(BasicScrapper):
 
         if items[0].a:
             chapter_title: str | None = items[0].a.text
+            if chapter_title:
+                chapter_title = chapter_title.strip()
+
             try:
                 if not chapter_title:
                     raise ValueError
-                chapter_num = float(chapter_title)
-            except:
+                chapter_num = float(chapter_title.split(" ")[-1])
+            except:  # noqa: E722
                 chapter_num = None
         else:
             chapter_title = None
@@ -53,6 +56,8 @@ class ManhuasScrapper(BasicScrapper):
 
         if items[0].span:
             chapter_date: str | None = items[0].span.text
+            if chapter_date:
+                chapter_date = chapter_date.strip()
         else:
             chapter_date = None
 
@@ -73,6 +78,6 @@ class ManhuasScrapper(BasicScrapper):
                 data[3],
                 datetime.now(),
             )
-            db_manager.insert_scraping_history(sc)
+            db_manager.insert_scraping_history([sc])
         else:
-            ...
+            print("Invalid scraping.")
